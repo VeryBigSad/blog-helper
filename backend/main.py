@@ -13,6 +13,8 @@ CORS(app)
 
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
+PROMPT = os.getenv("GPT3_PROMPT")
+
 try:
     # if there is a data.json file, load it
     # if not, create a new one
@@ -27,7 +29,7 @@ except FileNotFoundError:
 def get_post_from_gpt3(title, description):
     response = openai.Completion.create(
         engine="text-davinci-003",
-        prompt=f'Write an article (minimum 150 words) for my blog, where title is: "{title}" and description looks like this: "{description}". Format it with HTML for my website. Do not outline the title or the description at the start of the article. Use the same language that is used in the title & description.\n\nRESULT:',
+        prompt=PROMPT.replace('{title}', title).replace('{description}', description),
         temperature=0.7,
         max_tokens=1300,
         top_p=1,
@@ -41,7 +43,6 @@ def get_post_from_gpt3(title, description):
 @app.route("/blog-posts", methods=["GET"])
 def get_blog_posts():
     # i + 1 since our counter starts at 1 
-    # new_data = [{"id": i + 1, **data["blog_posts"][str(i + 1)]} for i in range(len(data["blog_posts"]))]
     new_data = [{"id": key, **value} for key, value in data["blog_posts"].items()]
     return jsonify(new_data), 200
 
